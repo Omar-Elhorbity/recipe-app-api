@@ -4,10 +4,29 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /app
+    depends_on:
+      - db
     ports:
       - "8000:8000"
     volumes:
       - .:/app
+    env_file:
+      - .env
     environment:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
+      DB_HOST: db
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
