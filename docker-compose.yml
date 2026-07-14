@@ -4,8 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     volumes:
@@ -21,12 +26,18 @@ services:
       DB_PASS: ${POSTGRES_PASSWORD}
 
   db:
-    image: postgres:latest
+    image: postgres:17
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   postgres_data:
