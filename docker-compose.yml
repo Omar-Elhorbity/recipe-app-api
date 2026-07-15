@@ -4,6 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /app
+    # Run as the host user (uid/gid 1000) so files the container writes into
+    # the bind-mounted project stay owned by you, not root.
+    user: "1000:1000"
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
